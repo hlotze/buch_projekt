@@ -1,1 +1,10 @@
 /buchprojekt/
+*.pdf
+*.docx
+*.epub
+*.aux 
+*.log
+*.out
+*.toc
+build/
+dist/
