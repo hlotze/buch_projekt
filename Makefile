@@ -24,9 +24,41 @@ PANDOC  := pandoc
 
 # --------------------------------------------
 # Automatische Nummernfindung
+# - Kapitel, Fragmente
 # --------------------------------------------
-NEXT_KAPITEL := $(shell n=$$(ls $(KAPITEL_DIR)/*_Kapitel.md 2>/dev/null | sed 's/.*\/\([0-9][0-9][0-9]\)_Kapitel.md/\1/' | sort -n | tail -1); [ -z "$$n" ] && n=0; printf "%03d" $$((n+10)))
-NEXT_FRAGMENT := $(shell n=$$(ls $(FRAG_DIR)/*_Fragment.md 2>/dev/null | sed 's/.*\/\([0-9][0-9][0-9]\)_Fragment.md/\1/' | sort -n | tail -1); [ -z "$$n" ] && n=0; printf "%03d" $$((n+10)))
+KAPITEL_FILES := $(wildcard $(KAPITEL_DIR)/[0-9][0-9][0-9]_Kapitel.md)
+LAST_KAPITEL := $(notdir $(lastword $(sort $(KAPITEL_FILES))))
+LAST_KAPITEL_NUM := $(firstword $(subst _, ,$(LAST_KAPITEL)))
+NEXT_KAPITEL := $(shell printf '%03d' $$(expr $(if $(LAST_KAPITEL_NUM),$(LAST_KAPITEL_NUM),0) + 10))
+
+
+FRAGMENT_FILES := $(wildcard $(FRAG_DIR)/[0-9][0-9][0-9]_Fragment.md)
+LAST_FRAGMENT := $(notdir $(lastword $(sort $(FRAGMENT_FILES))))
+LAST_FRAGMENT_NUM := $(firstword $(subst _, ,$(LAST_FRAGMENT)))
+NEXT_FRAGMENT := $(shell printf '%03d' $$(expr $(if $(LAST_FRAGMENT_NUM),$(LAST_FRAGMENT_NUM),0) + 10))
+
+# --------------------------------------------
+# Automatische Nummernfindung
+# - Plots, Themen, Welt
+# --------------------------------------------
+PLOT_DIR := $(PROJECT_DIR)/Plot
+THEMEN_DIR := $(PROJECT_DIR)/Themen
+WELT_DIR := $(PROJECT_DIR)/Welt
+
+PLOT_FILES := $(wildcard $(PLOT_DIR)/[0-9][0-9][0-9]_*.md)
+LAST_PLOT := $(notdir $(lastword $(sort $(PLOT_FILES))))
+LAST_PLOT_NUM := $(firstword $(subst _, ,$(LAST_PLOT)))
+NEXT_PLOT := $(shell printf '%03d' $$(expr $(if $(LAST_PLOT_NUM),$(LAST_PLOT_NUM),0) + 10))
+
+THEMEN_FILES := $(wildcard $(THEMEN_DIR)/[0-9][0-9][0-9]_*.md)
+LAST_THEMA := $(notdir $(lastword $(sort $(THEMEN_FILES))))
+LAST_THEMA_NUM := $(firstword $(subst _, ,$(LAST_THEMA)))
+NEXT_THEMA := $(shell printf '%03d' $$(expr $(if $(LAST_THEMA_NUM),$(LAST_THEMA_NUM),0) + 10))
+
+WELT_FILES := $(wildcard $(WELT_DIR)/[0-9][0-9][0-9]_*.md)
+LAST_WELT := $(notdir $(lastword $(sort $(WELT_FILES))))
+LAST_WELT_NUM := $(firstword $(subst _, ,$(LAST_WELT)))
+NEXT_WELT := $(shell printf '%03d' $$(expr $(if $(LAST_WELT_NUM),$(LAST_WELT_NUM),0) + 10))
 
 # --------------------------------------------
 # HELP – automatisch generiert aus ## Kommentaren
@@ -46,14 +78,33 @@ help: ## Zeigt diese Hilfe an
 new-kapitel: ## Neues Kapitel anlegen
 	@echo "📄 Erzeuge Kapitel $(NEXT_KAPITEL)_Kapitel.md"
 	cp $(KAPITEL_DIR)/000_Kapitel_template.md $(KAPITEL_DIR)/$(NEXT_KAPITEL)_Kapitel.md
-	@$(YQ) -i '.nummer = $(NEXT_KAPITEL) | .titel = "Kapitel $(NEXT_KAPITEL)"' $(KAPITEL_DIR)/$(NEXT_KAPITEL)_Kapitel.md
+	@$(YQ) eval --front-matter=process -i '.nummer = "$(NEXT_KAPITEL)" | .titel = "Kapitel $(NEXT_KAPITEL)"' $(KAPITEL_DIR)/$(NEXT_KAPITEL)_Kapitel.md
 	@echo "✔️ Kapitel erstellt: $(KAPITEL_DIR)/$(NEXT_KAPITEL)_Kapitel.md"
+
 
 new-fragment: ## Neues Fragment anlegen
 	@echo "🧩 Erzeuge Fragment $(NEXT_FRAGMENT)_Fragment.md"
 	cp $(FRAG_DIR)/000_Fragment_template.md $(FRAG_DIR)/$(NEXT_FRAGMENT)_Fragment.md
-	@$(YQ) -i '.nummer = $(NEXT_FRAGMENT) | .titel = "Fragment $(NEXT_FRAGMENT)"' $(FRAG_DIR)/$(NEXT_FRAGMENT)_Fragment.md
+	@$(YQ) eval --front-matter=process -i '.nummer = "$(NEXT_FRAGMENT)" | .titel = "Fragment $(NEXT_FRAGMENT)"' $(FRAG_DIR)/$(NEXT_FRAGMENT)_Fragment.md
 	@echo "✔️ Fragment erstellt: $(FRAG_DIR)/$(NEXT_FRAGMENT)_Fragment.md"
+
+new-plot: ## Neuen Plot anlegen
+	@echo "📦 Erzeuge Plot $(NEXT_PLOT)_Plot.md"
+	cp $(PLOT_DIR)/000_Plot_template.md $(PLOT_DIR)/$(NEXT_PLOT)_Plot.md
+	@$(YQ) eval --front-matter=process -i '.nummer = "$(NEXT_PLOT)" | .titel = "Plot $(NEXT_PLOT)"' $(PLOT_DIR)/$(NEXT_PLOT)_Plot.md
+	@echo "✔️ Plot erstellt: $(PLOT_DIR)/$(NEXT_PLOT)_Plot.md"
+
+new-thema: ## Neues Thema anlegen
+	@echo "📝 Erzeuge Thema $(NEXT_THEMA)_Thema.md"
+	cp $(THEMEN_DIR)/000_Themen_template.md $(THEMEN_DIR)/$(NEXT_THEMA)_Thema.md
+	@$(YQ) eval --front-matter=process -i '.nummer = "$(NEXT_THEMA)" | .titel = "Thema $(NEXT_THEMA)"' $(THEMEN_DIR)/$(NEXT_THEMA)_Thema.md
+	@echo "✔️ Thema erstellt: $(THEMEN_DIR)/$(NEXT_THEMA)_Thema.md"
+
+new-welt: ## Neuen Welteintrag anlegen
+	@echo "🌍 Erzeuge Welt $(NEXT_WELT)_Welt.md"
+	cp $(WELT_DIR)/000_Welt_template.md $(WELT_DIR)/$(NEXT_WELT)_Welt.md
+	@$(YQ) eval --front-matter=process -i '.nummer = "$(NEXT_WELT)" | .titel = "Welt $(NEXT_WELT)"' $(WELT_DIR)/$(NEXT_WELT)_Welt.md
+	@echo "✔️ Welteintrag erstellt: $(WELT_DIR)/$(NEXT_WELT)_Welt.md"
 
 # --------------------------------------------
 # Analyse & Qualität
@@ -70,6 +121,16 @@ check: ## Prüft auf fehlende '# Titel'-Zeilen
 	else \
 		echo "✔️ Alle Dateien haben einen '# Titel'"; \
 	fi
+
+debug: ## Zeigt erkannte Pfade und Nummern
+	@echo "PROJECT_DIR=$(PROJECT_DIR)"
+	@echo "KAPITEL_DIR=$(KAPITEL_DIR)"
+	@echo "FRAG_DIR=$(FRAG_DIR)"
+	@echo "NEXT_KAPITEL=$(NEXT_KAPITEL)"
+	@echo "NEXT_FRAGMENT=$(NEXT_FRAGMENT)"
+	@echo "NEXT_PLOT=$(NEXT_PLOT)"
+	@echo "NEXT_THEMA=$(NEXT_THEMA)"
+	@echo "NEXT_WELT=$(NEXT_WELT)"
 
 # --------------------------------------------
 # Backup

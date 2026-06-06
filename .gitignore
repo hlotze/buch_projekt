@@ -8,3 +8,4 @@
 *.toc
 build/
 dist/
+.DS_Store
